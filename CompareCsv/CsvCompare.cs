@@ -154,8 +154,18 @@ namespace CompareCsv
 
         private void BuildString(string columnName, string firstCSVFileCell, string secondFileName, double diff, string isCrucial)
         {
-            Log.Error($"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}");
-            m_stringBuilder.AppendLine($"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}");
+            string sbMsg = $@"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}";
+
+            if (string.Compare(isCrucial, "Crucial") == 0)
+            {
+                Log.Error(sbMsg);
+            }
+            else
+            {
+                Log.Information(sbMsg);
+            }
+
+            m_stringBuilder.AppendLine(sbMsg);
         }
 
         private void WriteTxtFile(StringBuilder sb)
