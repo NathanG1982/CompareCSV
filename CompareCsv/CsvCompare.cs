@@ -32,8 +32,8 @@ namespace CompareCsv
         //Column Name is:  Wind Direction,
         public void Start()
         {
-            string FirstFileNameFullPath = Path.GetFullPath(BaseDir + m_settings.FirstFileName);
-            string SecondFileNameFullPath = Path.GetFullPath(BaseDir + m_settings.SecondFileName);
+            string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.FirstFileName));
+            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir + m_settings.SecondFileName));
             List<string[]> firstCSVFile;
             List<string[]> secondCSVFile;
             
