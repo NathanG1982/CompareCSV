@@ -1,7 +1,5 @@
 ﻿using CompareCsv.Services;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -15,6 +13,8 @@ namespace CompareCsv
     {
         private ISettings m_settings = LoadSettings();
         private double m_minimalSmallNumber = 0.0000001;
+        private StringBuilder m_stringBuilder = new StringBuilder();
+
 
         static ISettings LoadSettings()
         {
@@ -30,6 +30,10 @@ namespace CompareCsv
 
         public void Start()
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+
             string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(m_settings.BaseDir, m_settings.FirstFileName));
             string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(m_settings.BaseDir, m_settings.SecondFileName));
             List<string[]> firstCSVFile;
@@ -41,6 +45,8 @@ namespace CompareCsv
 
             if (m_settings.IsDeleteFiles)
                 DeleteOriginFiles(FirstFileNameFullPath, SecondFileNameFullPath);
+
+            Console.WriteLine();
         }
 
         private (List<string[]> firstCSVFile, List<string[]> secondCSVFile) CSVToList(string firstFileNamePath, string secondFileNamePath)
@@ -49,8 +55,26 @@ namespace CompareCsv
             var csv2 = new List<string[]>();
             var linesFromFisrtFile = File.ReadAllLines(firstFileNamePath);
             var linesFromSecondFile = File.ReadAllLines(secondFileNamePath);
+            int length = 0;
 
-            for (int i = 0; i < linesFromFisrtFile.Length; i++)
+            if (linesFromFisrtFile.Length < linesFromSecondFile.Length)
+            {
+                length = linesFromFisrtFile.Length;
+                m_stringBuilder.AppendLine($"{m_settings.SecondFileName} is larger than {m_settings.FirstFileName}");
+                Log.Information($"{m_settings.SecondFileName} is larger than {m_settings.FirstFileName}");
+            }
+            else if (linesFromFisrtFile.Length > linesFromSecondFile.Length)
+            {
+                length = linesFromSecondFile.Length;
+                m_stringBuilder.AppendLine($"{m_settings.FirstFileName} is larger than {m_settings.SecondFileName}");
+                Log.Information($"{m_settings.FirstFileName} is larger than {m_settings.SecondFileName}");
+            }
+            else
+            {
+                length = linesFromFisrtFile.Length;
+            }
+
+            for (int i = 0; i < length; i++)
             {
                 csv1.Add(linesFromFisrtFile[i].Split(','));
                 csv2.Add(linesFromSecondFile[i].Split(','));
@@ -61,13 +85,12 @@ namespace CompareCsv
 
         private StringBuilder CompareCsv(List<string[]> firstCSVFile, List<string[]> secondCSVFile)
         {
-            StringBuilder sb = new StringBuilder();
             string msg = string.Empty;
             double diff = 9999999999;
             double sub1 = 0;
             double sub2 = 0;
             string IsCrucial = "Not Crucial";
-            
+
             for (int i = 0, j = 0; i < firstCSVFile[i].Length + 1 && i < firstCSVFile.Count; j++)
             {
                 if (j != firstCSVFile[i].Length && firstCSVFile[i][j] != secondCSVFile[i][j])
@@ -82,7 +105,7 @@ namespace CompareCsv
 
                     try
                     {
-                        sub1 = firstCSVFile[i][j].Contains('"') 
+                        sub1 = firstCSVFile[i][j].Contains('"')
                             ? double.Parse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault())
                             : double.Parse(firstCSVFile[i][j]);
 
@@ -92,19 +115,29 @@ namespace CompareCsv
 
                         diff = Math.Abs(sub1) - Math.Abs(sub2);
 
-                        if (diff != default(double) && diff.ToString().Split('.').Skip(1).FirstOrDefault().Count() > 6)
+                        if (diff != default(double))
                         {
                             IsCrucial = Math.Abs(diff) > m_minimalSmallNumber ? "CRUCIAL" : "Not Crucial";
                         }
                     }
                     finally
                     {
-                        sb.AppendLine($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
-
-						if (IsCrucial == "CRUCIAL")
-							Log.Error($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
-						else
-							Log.Information($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
+                        if (m_settings.IsWriteOnlyCrucail)
+                        {
+                            if (IsCrucial == "CRUCIAL")
+                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+                        }
+                        else
+                        {
+                            if (IsCrucial == "CRUCIAL")
+                            {
+                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+                            }
+                            else
+                            {
+                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+                            }
+                        }
                     }
                 }
 
@@ -115,8 +148,14 @@ namespace CompareCsv
                 }
             }
 
-            sb.AppendLine(msg);
-            return sb;
+            m_stringBuilder.AppendLine(msg);
+            return m_stringBuilder;
+        }
+
+        private void BuildString(string columnName, string firstCSVFileCell, string secondFileName, double diff, string isCrucial)
+        {
+            Log.Error($"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}");
+            m_stringBuilder.AppendLine($"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}");
         }
 
         private void WriteTxtFile(StringBuilder sb)
