@@ -28,8 +28,7 @@ namespace CompareCsv
             var settings = config.Get<Settings>();
             return settings;
         }
-        //Wind Speed, file name is: SpecValSys.csv value is: 0.569623942 file name is:SpecValtes.csv value is: 0.569791268
-        //Column Name is:  Wind Direction,
+
         public void Start()
         {
             string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.FirstFileName));
@@ -70,7 +69,9 @@ namespace CompareCsv
             {
                 if (j != firstCSVFile[i].Length && firstCSVFile[i][j] != secondCSVFile[i][j])
                 {
-                    if (m_settings.IgnoreWindData && (string.Compare((firstCSVFile[0][j]), " Wind Speed") == 0 || string.Compare((firstCSVFile[0][j]), "Wind Direction") == 0))
+                    if (m_settings.IgnoreWindData && (string.Compare((firstCSVFile[0][j]), " Wind Speed") == 0 
+                        || string.Compare((firstCSVFile[0][j]), "Wind Direction") == 0
+                        || string.Compare((firstCSVFile[0][j]), " Wind Direction") == 0))
                     {
                         msg = "Wind Data diff was ignored";
                         continue;
