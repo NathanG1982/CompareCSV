@@ -17,5 +17,7 @@ namespace CompareCsv
         public bool IsDeleteFiles { get; set; } = false;
 
         public bool IgnoreWindData { get; set; } = true;
-	}
+
+        public bool IsWriteOnlyCrucail { get; set; } = false;
+    }
 }

@@ -9,12 +9,14 @@ namespace CompareCsv.Services
     {
 		string BaseDir { get; }
 
-		string FirstFileName { get;}
+		string FirstFileName { get; }
 
-        string SecondFileName { get;}
+        string SecondFileName { get; }
 
-        bool IsDeleteFiles { get;}
+        bool IsDeleteFiles { get; }
 
-        bool IgnoreWindData { get; set; }
+        bool IgnoreWindData { get; }
+
+        bool IsWriteOnlyCrucail { get; }
     }
 }

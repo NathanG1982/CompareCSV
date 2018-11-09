@@ -1,7 +1,8 @@
 ﻿{
-	"BaseDir": "E:\\Dropbox\\Applications\\CompareCsv\\Files\\",
-	"FirstFileName": "SpecValSys.csv",
+	"BaseDir": "D:\\App\\CompareCSV\\Files",
+	"FirstFileName": "SpecValSystem.csv",
 	"SecondFileName": "SpecValTest.csv",
 	"IsDeleteFiles": false,
-	"IgnoreWindData": true
+	"IgnoreWindData": true,
+	"IsWriteOnlyCrucail": true
 }
