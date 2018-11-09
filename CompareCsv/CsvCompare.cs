@@ -13,9 +13,10 @@ namespace CompareCsv
     public class CompareCSVFiles
     {
         private ISettings m_settings = LoadSettings();
+        private double m_minimalSmallNumber = 0.0000001;
 
-        //private readonly string BaseDir = @"E:\Dropbox\Applications\CompareCsv\Files\";
-        private readonly string BaseDir = Directory.GetCurrentDirectory();
+        private readonly string m_baseDir = @"E:\Dropbox\Applications\CompareCsv\Files\";
+        //private readonly string BaseDir = Directory.GetCurrentDirectory();
 
         static ISettings LoadSettings()
         {
@@ -31,8 +32,8 @@ namespace CompareCsv
 
         public void Start()
         {
-            string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.FirstFileName));
-            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.SecondFileName));
+            string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(m_baseDir, m_settings.FirstFileName));
+            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(m_baseDir, m_settings.SecondFileName));
             List<string[]> firstCSVFile;
             List<string[]> secondCSVFile;
             
@@ -64,7 +65,11 @@ namespace CompareCsv
         {
             StringBuilder sb = new StringBuilder();
             string msg = string.Empty;
-
+            double diff = 9999999999;
+            double sub1 = 0;
+            double sub2 = 0;
+            string IsCrucial = "Not Crucial";
+            
             for (int i = 0, j = 0; i < firstCSVFile[i].Length + 1 && i < firstCSVFile.Count; j++)
             {
                 if (j != firstCSVFile[i].Length && firstCSVFile[i][j] != secondCSVFile[i][j])
@@ -77,8 +82,27 @@ namespace CompareCsv
                         continue;
                     }
 
-                    double diff = double.Parse(firstCSVFile[i][j]) - double.Parse(secondCSVFile[i][j]);
-                    sb.AppendLine($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}");
+                    try
+                    {
+                        sub1 = firstCSVFile[i][j].Contains('"') 
+                            ? double.Parse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault())
+                            : double.Parse(firstCSVFile[i][j]);
+
+                        sub2 = secondCSVFile[i][j].Contains('"')
+                            ? double.Parse(secondCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault())
+                            : double.Parse(secondCSVFile[i][j]);
+
+                        diff = Math.Abs(sub1) - Math.Abs(sub2);
+
+                        if (diff != default(double) && diff.ToString().Split('.').Skip(1).FirstOrDefault().Count() > 6)
+                        {
+                            IsCrucial = Math.Abs(diff) > m_minimalSmallNumber ? "CRUCIAL" : "Not Crucial";
+                        }
+                    }
+                    finally
+                    {
+                        sb.AppendLine($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
+                    }
                 }
 
                 if (j == firstCSVFile[0].Length)
@@ -88,14 +112,13 @@ namespace CompareCsv
                 }
             }
 
-
             sb.AppendLine(msg);
             return sb;
         }
 
         private void WriteTxtFile(StringBuilder sb)
         {
-            var newFileNameWithDiff = Path.Combine(BaseDir, $"diff_{DateTime.Now.ToUniversalTime().ToString("ddMMyyyy_HHmmss")}.txt");
+            var newFileNameWithDiff = Path.Combine(m_baseDir, $"diff_{DateTime.Now.ToUniversalTime().ToString("ddMMyyyy_HHmmss")}.txt");
             string sbstring = sb.ToString();
 
             // Create the file.
