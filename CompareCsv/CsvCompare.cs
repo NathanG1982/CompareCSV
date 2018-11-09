@@ -33,7 +33,7 @@ namespace CompareCsv
         public void Start()
         {
             string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.FirstFileName));
-            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir + m_settings.SecondFileName));
+            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(BaseDir, m_settings.SecondFileName));
             List<string[]> firstCSVFile;
             List<string[]> secondCSVFile;
             
@@ -70,7 +70,7 @@ namespace CompareCsv
             {
                 if (j != firstCSVFile[i].Length && firstCSVFile[i][j] != secondCSVFile[i][j])
                 {
-                    if (m_settings.IgnoreWindData && (string.Compare((firstCSVFile[0][j]), " Wind Speed") == 0 || string.Compare((firstCSVFile[0][j]), " Wind Direction") == 0))
+                    if (m_settings.IgnoreWindData && (string.Compare((firstCSVFile[0][j]), " Wind Speed") == 0 || string.Compare((firstCSVFile[0][j]), "Wind Direction") == 0))
                     {
                         msg = "Wind Data diff was ignored";
                         continue;
