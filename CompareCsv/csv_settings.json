@@ -1,4 +1,5 @@
 ﻿{
+	"BaseDir": "E:\\Dropbox\\Applications\\CompareCsv\\Files\\",
 	"FirstFileName": "SpecValSys.csv",
 	"SecondFileName": "SpecValTest.csv",
 	"IsDeleteFiles": false,

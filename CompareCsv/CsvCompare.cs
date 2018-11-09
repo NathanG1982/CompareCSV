@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +15,6 @@ namespace CompareCsv
     {
         private ISettings m_settings = LoadSettings();
         private double m_minimalSmallNumber = 0.0000001;
-
-        private readonly string m_baseDir = @"E:\Dropbox\Applications\CompareCsv\Files\";
-        //private readonly string BaseDir = Directory.GetCurrentDirectory();
 
         static ISettings LoadSettings()
         {
@@ -32,8 +30,8 @@ namespace CompareCsv
 
         public void Start()
         {
-            string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(m_baseDir, m_settings.FirstFileName));
-            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(m_baseDir, m_settings.SecondFileName));
+            string FirstFileNameFullPath = Path.GetFullPath(Path.Combine(m_settings.BaseDir, m_settings.FirstFileName));
+            string SecondFileNameFullPath = Path.GetFullPath(Path.Combine(m_settings.BaseDir, m_settings.SecondFileName));
             List<string[]> firstCSVFile;
             List<string[]> secondCSVFile;
             
@@ -102,6 +100,11 @@ namespace CompareCsv
                     finally
                     {
                         sb.AppendLine($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
+
+						if (IsCrucial == "CRUCIAL")
+							Log.Error($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
+						else
+							Log.Information($"Column Name is: {firstCSVFile[0][j]}, file name is: {m_settings.FirstFileName} value is: {firstCSVFile[i][j]} file name is:{m_settings.SecondFileName} value is: {secondCSVFile[i][j]} and diff is: {diff}. The DIFF is {IsCrucial ?? IsCrucial: ''}");
                     }
                 }
 
@@ -118,7 +121,7 @@ namespace CompareCsv
 
         private void WriteTxtFile(StringBuilder sb)
         {
-            var newFileNameWithDiff = Path.Combine(m_baseDir, $"diff_{DateTime.Now.ToUniversalTime().ToString("ddMMyyyy_HHmmss")}.txt");
+            var newFileNameWithDiff = Path.Combine(m_settings.BaseDir, $"diff_{DateTime.Now.ToUniversalTime().ToString("ddMMyyyy_HHmmss")}.txt");
             string sbstring = sb.ToString();
 
             // Create the file.

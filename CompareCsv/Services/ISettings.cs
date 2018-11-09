@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace CompareCsv.Services
 {
     public interface ISettings
     {
-        string FirstFileName { get;}
+		string BaseDir { get; }
+
+		string FirstFileName { get;}
 
         string SecondFileName { get;}
 
