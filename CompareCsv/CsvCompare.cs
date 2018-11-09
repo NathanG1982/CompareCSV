@@ -156,7 +156,7 @@ namespace CompareCsv
         {
             string sbMsg = $@"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}";
 
-            if (string.Compare(isCrucial, "Crucial") == 0)
+            if (string.Compare(isCrucial, "CRUCIAL") == 0)
             {
                 Log.Error(sbMsg);
             }
