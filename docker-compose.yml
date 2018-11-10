@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  comparecsv:
+    image: ${DOCKER_REGISTRY}comparecsv
+    build:
+      context: .
+      dockerfile: CompareCsv/Dockerfile
