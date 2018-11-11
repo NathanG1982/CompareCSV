@@ -46,7 +46,8 @@ namespace CompareCsv
             if (m_settings.IsDeleteFiles)
                 DeleteOriginFiles(FirstFileNameFullPath, SecondFileNameFullPath);
 
-            Console.WriteLine();
+            Console.WriteLine("Press Any Key To Continue");
+            Console.ReadLine();
         }
 
         private (List<string[]> firstCSVFile, List<string[]> secondCSVFile) CSVToList(string firstFileNamePath, string secondFileNamePath)
