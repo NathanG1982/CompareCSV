@@ -115,13 +115,15 @@ namespace CompareCsv
 						if ((!string.IsNullOrWhiteSpace(firstCSVFile[i][j]) && !string.IsNullOrEmpty(firstCSVFile[i][j]) && string.Compare("", firstCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
 							&& !string.IsNullOrWhiteSpace(secondCSVFile[i][j]) && !string.IsNullOrEmpty(secondCSVFile[i][j]) && string.Compare("", secondCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
 						{
-							sub1 = firstCSVFile[i][j].Contains('"')
-								? double.Parse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault())
-								: double.Parse(firstCSVFile[i][j]);
+							if (firstCSVFile[i][j].Contains('"'))
+								double.TryParse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub1);
+							else
+								double.TryParse(firstCSVFile[i][j], out sub1);
 
-							sub2 = secondCSVFile[i][j].Contains('"')
-								? double.Parse(secondCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault())
-								: double.Parse(secondCSVFile[i][j]);
+							if (secondCSVFile[i][j].Contains('"'))
+								double.TryParse(secondCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub2);
+							else
+								double.TryParse(secondCSVFile[i][j], out sub2);
 
 							diff = Math.Abs(sub1) - Math.Abs(sub2);
 
@@ -133,22 +135,26 @@ namespace CompareCsv
                     }
                     finally
                     {
-                        if (m_settings.IsWriteOnlyCrucail)
-                        {
-                            if (IsCrucial == "CRUCIAL")
-                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
-                        }
-                        else
-                        {
-                            if (IsCrucial == "CRUCIAL")
-                            {
-                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
-                            }
-                            else
-                            {
-                                BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
-                            }
-                        }
+						if ((!string.IsNullOrWhiteSpace(firstCSVFile[i][j]) && !string.IsNullOrEmpty(firstCSVFile[i][j]) && string.Compare("", firstCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
+							&& !string.IsNullOrWhiteSpace(secondCSVFile[i][j]) && !string.IsNullOrEmpty(secondCSVFile[i][j]) && string.Compare("", secondCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
+						{
+							if (m_settings.IsWriteOnlyCrucail)
+							{
+								if (IsCrucial == "CRUCIAL")
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+							}
+							else
+							{
+								if (IsCrucial == "CRUCIAL")
+								{
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+								}
+								else
+								{
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+								}
+							}
+						}
                     }
                 }
 
