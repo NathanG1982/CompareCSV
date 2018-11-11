@@ -15,8 +15,7 @@ namespace CompareCsv
         private double m_minimalSmallNumber = 0.0000001;
         private StringBuilder m_stringBuilder = new StringBuilder();
 
-
-        static ISettings LoadSettings()
+		static ISettings LoadSettings()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -127,38 +126,35 @@ namespace CompareCsv
 
 							diff = Math.Abs(sub1) - Math.Abs(sub2);
 
-							if (diff != default(double))
-							{
-								IsCrucial = Math.Abs(diff) > m_minimalSmallNumber ? "CRUCIAL" : "Not Crucial";
-							}
-						}
-                    }
-                    finally
-                    {
-						if ((!string.IsNullOrWhiteSpace(firstCSVFile[i][j]) && !string.IsNullOrEmpty(firstCSVFile[i][j]) && string.Compare("", firstCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
-							&& !string.IsNullOrWhiteSpace(secondCSVFile[i][j]) && !string.IsNullOrEmpty(secondCSVFile[i][j]) && string.Compare("", secondCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
-						{
+							IsCrucial = Math.Abs(diff) > m_minimalSmallNumber ? "CRUCIAL" : "Not Crucial";
+
 							if (m_settings.IsWriteOnlyCrucail)
 							{
 								if (IsCrucial == "CRUCIAL")
-									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial, i + 1);
 							}
 							else
 							{
 								if (IsCrucial == "CRUCIAL")
 								{
-									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial, i + 1);
 								}
 								else
 								{
-									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial);
+									BuildString(firstCSVFile[0][j], firstCSVFile[i][j], secondCSVFile[i][j], diff, IsCrucial, i + 1);
 								}
 							}
 						}
                     }
+					catch (Exception ex)
+					{
+						Log.Error(ex.Message);
+					}
                 }
 
-                if (j == firstCSVFile[0].Length - 1)
+				IsCrucial = "Not Crucial";
+
+				if (j == firstCSVFile[0].Length - 1)
                 {
                     i++;
                     j = 0;
@@ -169,9 +165,9 @@ namespace CompareCsv
             return m_stringBuilder;
         }
 
-        private void BuildString(string columnName, string firstCSVFileCell, string secondFileName, double diff, string isCrucial)
+        private void BuildString(string columnName, string firstCSVFileCell, string secondFileName, double diff, string isCrucial, int line)
         {
-            string sbMsg = $@"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. || The DIFF is {isCrucial ?? isCrucial: ''}";
+            string sbMsg = $@"Column Name is: {columnName} || file name is: {m_settings.FirstFileName} value is: {firstCSVFileCell} || file name is: {m_settings.SecondFileName} value is: {secondFileName} diff is: {diff}. line number: {line} || The DIFF is {isCrucial ?? isCrucial: ''}";
 
             if (string.Compare(isCrucial, "CRUCIAL") == 0)
             {
