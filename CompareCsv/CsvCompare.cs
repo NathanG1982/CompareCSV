@@ -93,7 +93,7 @@ namespace CompareCsv
 
             for (int i = 0, j = 0; i < firstCSVFile.Count; j++)
             {
-                if (j != firstCSVFile[i].Length && string.Compare(firstCSVFile[i][j], secondCSVFile[i][j]) != 0)
+                if (j < firstCSVFile[i].Length && string.Compare(firstCSVFile[i][j], secondCSVFile[i][j]) != 0)
                 {
                     if (m_settings.IgnoreWindData && (string.Compare((firstCSVFile[0][j]), " Wind Speed") == 0 
                         || string.Compare((firstCSVFile[0][j]), "Wind Direction") == 0
@@ -114,18 +114,25 @@ namespace CompareCsv
 						if ((!string.IsNullOrWhiteSpace(firstCSVFile[i][j]) && !string.IsNullOrEmpty(firstCSVFile[i][j]) && string.Compare("", firstCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
 							&& !string.IsNullOrWhiteSpace(secondCSVFile[i][j]) && !string.IsNullOrEmpty(secondCSVFile[i][j]) && string.Compare("", secondCSVFile[i][j], StringComparison.InvariantCultureIgnoreCase) != 0)
 						{
-							if (firstCSVFile[i][j].Contains('"'))
-								double.TryParse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub1);
+							if (DateTime.TryParse(firstCSVFile[i][j], out var date1) && DateTime.TryParse(secondCSVFile[i][j], out var date2))
+							{
+								double.TryParse(date1.Ticks.ToString(), out sub1);
+								double.TryParse(date2.Ticks.ToString(), out sub2);
+							}
 							else
-								double.TryParse(firstCSVFile[i][j], out sub1);
+							{
+								if (firstCSVFile[i][j].Contains('"'))
+									double.TryParse(firstCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub1);
+								else
+									double.TryParse(firstCSVFile[i][j], out sub1);
 
-							if (secondCSVFile[i][j].Contains('"'))
-								double.TryParse(secondCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub2);
-							else
-								double.TryParse(secondCSVFile[i][j], out sub2);
+								if (secondCSVFile[i][j].Contains('"'))
+									double.TryParse(secondCSVFile[i][j].Split('"').Skip(1).Take(1).FirstOrDefault(), out sub2);
+								else
+									double.TryParse(secondCSVFile[i][j], out sub2);
+							}
 
 							diff = Math.Abs(sub1) - Math.Abs(sub2);
-
 							IsCrucial = Math.Abs(diff) > m_minimalSmallNumber ? "CRUCIAL" : "Not Crucial";
 
 							if (m_settings.IsWriteOnlyCrucail)
@@ -157,7 +164,7 @@ namespace CompareCsv
 				if (j == firstCSVFile[0].Length - 1)
                 {
                     i++;
-                    j = 0;
+                    j = -1;
                 }
             }
 
